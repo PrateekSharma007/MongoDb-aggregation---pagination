@@ -11,7 +11,7 @@ const movies= require("./db/schema")
 const paginatedresult = (model) => { 
     return async (req, res, next) => { 
         const page = parseInt(req.query.page || 1);
-        const limit = parseInt(req.query.limit || 10); // Default limit to 10 if not provided
+        const limit = parseInt(req.query.limit || 10); 
 
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
@@ -32,10 +32,21 @@ const paginatedresult = (model) => {
             };
         }
 
+        const filter = { } 
+
+        if (req.query.genres) {
+            filter.genres = req.query.genres; 
+          }
+
+
         try {
-            result.result = await model.find().limit(limit).skip(startIndex).exec();
-            res.paginatedresult = result;
-            next();
+            result.result = await model
+            .find(filter) 
+            .limit(limit)
+            .skip(startIndex)
+            .exec();
+      res.paginatedresult = result;
+      next();
         } catch (err) {
             console.error("Error:", err);
             res.status(500).send("Error");
@@ -183,7 +194,7 @@ app.get("/movie" ,paginatedresult(movies),(req,res) => {
     movies.aggregate([{$match : {year : 2018}}]).exec().then(movie => { 
         // console.log(movie)
         const paginatedMovies = res.paginatedresult.result;
-            res.send(paginatedMovies); //iska title nai aa raha
+            res.send(paginatedMovies); 
     })
 })
 
@@ -206,7 +217,7 @@ app.get("/groupyear" ,paginatedresult(movies),(req,res) => {
 //total movies with year 
 
 app.get("/sum" ,paginatedresult(movies),(req,res) => { 
-    movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1}}}]).then(movie => {
+    movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1  }}}]).then(movie => {
         const paginatedMovies = res.paginatedresult.result;
             res.send(paginatedMovies);
     })
