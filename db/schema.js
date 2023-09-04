@@ -1,4 +1,5 @@
 const mongoose = require("mongoose") 
+const mongoosePaginate = require('mongoose-paginate');
 
 const userSchema = mongoose.Schema({
     title: String,
@@ -12,4 +13,5 @@ const userSchema = mongoose.Schema({
 
 })
 
+userSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("movies",userSchema);
