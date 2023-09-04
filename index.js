@@ -54,6 +54,10 @@ const paginatedresult = (model) => {
     };
 }
 
+const pageNumber = 1; 
+const pageSize = 10; 
+
+
 
 
 
@@ -190,24 +194,114 @@ movies.insertMany([
 
 
 
-app.get("/movie" ,paginatedresult(movies),(req,res) => { 
-    movies.aggregate([{$match : {year : 2018}}]).exec().then(movie => { 
-        // console.log(movie)
-        const paginatedMovies = res.paginatedresult.result;
-            res.send(paginatedMovies); 
-    })
-})
-
-
+ app.get("/movie", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page || 1);
+      const limit = parseInt(req.query.limit || 10);
+  
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+  
+      const result = {};
+  
+      // Perform the aggregation to filter movies by year (2018)
+      const aggregationPipeline = [
+        {
+          $match: { year: 2018 },
+        },
+      ];
+  
+      if (req.query.genres) {
+        aggregationPipeline.push({
+          $match: { genres: req.query.genres },
+        });
+      }
+  
+      // Execute the aggregation pipeline
+      const moviesAggregation = await movies.aggregate(aggregationPipeline).exec();
+  
+      // Set the 'next' and 'previous' pagination links
+      if (endIndex < moviesAggregation.length) {
+        result.next = {
+          page: page + 1,
+          limit: limit,
+        };
+      }
+  
+      if (startIndex > 0) {
+        result.previous = {
+          page: page - 1,
+          limit: limit,
+        };
+      }
+  
+      // Apply pagination using slice
+      result.result = moviesAggregation.slice(startIndex, endIndex);
+  
+      res.json(result);
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).send("Error");
+    }
+  });
+  
 
 
 
 //groupby operator
-app.get("/groupyear" ,paginatedresult(movies),(req,res) => { 
-    movies.aggregate([{$group : {_id: "$year" , title : {$push : "$$ROOT"}}}]).exec().then(movie => {
-        const paginatedMovies = res.paginatedresult.result;
-            res.send(paginatedMovies);
-    })
+app.get("/groupyear" ,async (req,res) => { 
+    // movies.aggregate([{$group : {_id: "$year" , title : {$push : "$$ROOT"}}}]).exec().then(movie => {
+    //     const paginatedMovies = res.paginatedresult.result;
+    //         res.send(paginatedMovies);
+    // })
+
+    try {
+        const page = parseInt(req.query.page || 1);
+        const limit = parseInt(req.query.limit || 10);
+    
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+    
+        const result = {};
+    
+        // Perform the aggregation to filter movies by year (2018)
+        const aggregationPipeline = [
+            {$group : {_id: "$year" , title : {$push : "$$ROOT"}}}
+        ];
+    
+        if (req.query.genres) {
+          aggregationPipeline.push({
+            $match: { genres: req.query.genres },
+          });
+        }
+    
+        // Execute the aggregation pipeline
+        const moviesAggregation = await movies.aggregate(aggregationPipeline).exec();
+    
+        // Set the 'next' and 'previous' pagination links
+        if (endIndex < moviesAggregation.length) {
+          result.next = {
+            page: page + 1,
+            limit: limit,
+          };
+        }
+    
+        if (startIndex > 0) {
+          result.previous = {
+            page: page - 1,
+            limit: limit,
+          };
+        }
+    
+        // Apply pagination using slice
+        result.result = moviesAggregation.slice(startIndex, endIndex);
+    
+        res.json(result);
+      } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("Error");
+      }
+
 })
 
 
@@ -216,23 +310,122 @@ app.get("/groupyear" ,paginatedresult(movies),(req,res) => {
 
 //total movies with year 
 
-app.get("/sum" ,paginatedresult(movies),(req,res) => { 
-    movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1  }}}]).then(movie => {
-        const paginatedMovies = res.paginatedresult.result;
-            res.send(paginatedMovies);
-    })
+app.get("/sum" ,async (req,res) => { 
+    // movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1  }}}]).then(movie => {
+    //     const paginatedMovies = res.paginatedresult.result;
+    //         res.send(paginatedMovies);
+    // })
+
+    try {
+        const page = parseInt(req.query.page || 1);
+        const limit = parseInt(req.query.limit || 10);
+    
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+    
+        const result = {};
+    
+        // Perform the aggregation to filter movies by year (2018)
+        const aggregationPipeline = [
+            {$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1  }}}
+        ];
+    
+        if (req.query.genres) {
+          aggregationPipeline.push({
+            $match: { genres: req.query.genres },
+          });
+        }
+    
+        // Execute the aggregation pipeline
+        const moviesAggregation = await movies.aggregate(aggregationPipeline).exec();
+    
+        // Set the 'next' and 'previous' pagination links
+        if (endIndex < moviesAggregation.length) {
+          result.next = {
+            page: page + 1,
+            limit: limit,
+          };
+        }
+    
+        if (startIndex > 0) {
+          result.previous = {
+            page: page - 1,
+            limit: limit,
+          };
+        }
+    
+        // Apply pagination using slice
+        result.result = moviesAggregation.slice(startIndex, endIndex);
+    
+        res.json(result);
+      } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("Error");
+      }
+
+
 })
 
 
-
+  
 
 //sorting descending
 
-app.get("/descending" ,paginatedresult(movies),(req,res) => { 
-    movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1}}},{$sort :{total : -1}}]).then(movie => {
-        const paginatedMovies = res.paginatedresult.result;
-            res.send(paginatedMovies);
-    })
+app.get("/descending" ,async (req,res) => { 
+    // movies.aggregate([{$match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1}}},{$sort :{total : -1}}]).then(movie => {
+    //     const paginatedMovies = res.paginatedresult.result;
+    //         res.send(paginatedMovies);
+    // })
+
+    try {
+        const page = parseInt(req.query.page || 1);
+        const limit = parseInt(req.query.limit || 10);
+    
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+    
+        const result = {};
+    
+     
+        const aggregationPipeline = [{
+            $match : {type:"movie" }},{$group : {_id:"$year" ,total : {$sum : 1}}},{$sort :{total : -1}}
+        ];
+    
+        if (req.query.genres) {
+          aggregationPipeline.push({
+            $match: { genres: req.query.genres },
+          });
+        }
+    
+    
+        const moviesAggregation = await movies.aggregate(aggregationPipeline).exec();
+    
+        // Set the 'next' and 'previous' pagination links
+        if (endIndex < moviesAggregation.length) {
+          result.next = {
+            page: page + 1,
+            limit: limit,
+          };
+        }
+    
+        if (startIndex > 0) {
+          result.previous = {
+            page: page - 1,
+            limit: limit,
+          };
+        }
+    
+        // Apply pagination using slice
+        result.result = moviesAggregation.slice(startIndex, endIndex);
+    
+        res.json(result);
+      } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("Error");
+      }
+
+
+    
 })
 
 
