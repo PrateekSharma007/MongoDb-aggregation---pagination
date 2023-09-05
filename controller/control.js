@@ -3,11 +3,12 @@ const app = express() ;
 const mongoose = require("mongoose") ; 
 const movies = require("../db/schema") ; 
 const db = require("../db/db") ; 
+const {aggregate} = require("mongoose")
 
 
 
 
-const movies = async (req,res) => { 
+const movie = async (req,res) => { 
     try {
         const page = parseInt(req.query.page || 1);
         const limit = parseInt(req.query.limit || 10);
@@ -212,7 +213,7 @@ const descending = async (req,res) => {
 }
 
 
-module.exports = {movies, sum,descending,groupyear,}
+module.exports = {movie, sum,descending,groupyear,}
 
 
 

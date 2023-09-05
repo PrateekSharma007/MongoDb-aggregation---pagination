@@ -1,66 +1,16 @@
 const express = require("express") ; 
 const mongoose = require("mongoose");
-const {aggregate} = require("mongoose")
 const app = express() ;
 const db = require("./db/db")
 const movies= require("./db/schema")
+const route = require("./routes/route") 
 
 
-//middleware for pagination 
+app.use(express.json({limit : '5mb'}));
+app.use(express.urlencoded({extended : true}));
 
-const paginatedresult = (model) => { 
-    return async (req, res, next) => { 
-        const page = parseInt(req.query.page || 1);
-        const limit = parseInt(req.query.limit || 10); 
-
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-
-        const result = {};
-
-        if (endIndex < (await model.countDocuments().exec())) {
-            result.next = {
-                page: page + 1,
-                limit: limit,
-            };
-        }
-
-        if (startIndex > 0) {
-            result.previous = {
-                page: page - 1,
-                limit: limit,
-            };
-        }
-
-        const filter = { } 
-
-        if (req.query.genres) {
-            filter.genres = req.query.genres; 
-          }
-
-
-        try {
-            result.result = await model
-            .find(filter) 
-            .limit(limit)
-            .skip(startIndex)
-            .exec();
-      res.paginatedresult = result;
-      next();
-        } catch (err) {
-            console.error("Error:", err);
-            res.status(500).send("Error");
-        }
-    };
-}
-
-const pageNumber = 1; 
-const pageSize = 10; 
-
-
-
-
-
+// app.use(morgan('dev'))
+app.use('/',route )
 
 // http://localhost:3000/users?page=1&limit=5
 
@@ -188,6 +138,11 @@ movies.insertMany([
         type: "movie",
     },
  ])
+
+
+ app.get("/",async (req,res) => { 
+  res.send('Mongodb aggregation')
+})
 
 
 app.listen(3000,() => { 
