@@ -1,19 +1,17 @@
 const express = require("express") 
 const app = express() ; 
 const router = express.Router() ;
-const {movies, sum , descending, groupyear} = require("../controller/control")
+const {movie, sum , descending, groupyear} = require("../controller/control")
 
 
 
+router.get('/movie', movie);
 
+router.get('/sum', sum);
 
-router.get('/movies', movies);
+router.get('/descending', descending);
 
-router.get('/movies', sum);
-
-router.get('/movies', descending);
-
-router.get('/movies', groupyear);
+router.get('/groupyear', groupyear);
 
 
 module.exports = router; 
