@@ -1,23 +1,20 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const movies = require("../db/schema");
-const db = require("../db/db");
+const movies = require("../model/schema");
+const db = require("../model/db");
 const { aggregate } = require("mongoose")
-const User = require("../db/schemaauth")
+const User = require("../model/schemaauth")
+const paginateMiddleware = require("../utils/pagination");
 
 
 
 const movie = async (req, res) => {
   try {
-    const page = parseInt(req.query.page || 1);
-    const limit = parseInt(req.query.limit || 10);
-
+    const { page, limit } = req.pagination;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-
     const result = {};
-
 
     const aggregationPipeline = [
       {
@@ -31,9 +28,7 @@ const movie = async (req, res) => {
       });
     }
 
-
     const moviesAggregation = await movies.aggregate(aggregationPipeline).exec();
-
 
     if (endIndex < moviesAggregation.length) {
       result.next = {
@@ -49,7 +44,6 @@ const movie = async (req, res) => {
       };
     }
 
-
     result.result = moviesAggregation.slice(startIndex, endIndex);
 
     res.json(result);
@@ -57,17 +51,14 @@ const movie = async (req, res) => {
     console.error("Error:", err);
     res.status(500).send("Error");
   }
-}
+};
 
 
 const groupyear = async (req, res) => {
   try {
-    const page = parseInt(req.query.page || 1);
-    const limit = parseInt(req.query.limit || 10);
-
+    const { page, limit } = req.pagination;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-
     const result = {};
 
     
@@ -113,12 +104,9 @@ const groupyear = async (req, res) => {
 
 const sum = async (req, res) => {
   try {
-    const page = parseInt(req.query.page || 1);
-    const limit = parseInt(req.query.limit || 10);
-
+    const { page, limit } = req.pagination;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-
     const result = {};
 
 
@@ -128,7 +116,7 @@ const sum = async (req, res) => {
 
     if (req.query.genres) {
       aggregationPipeline.push({
-        $match: { genres: req.query.genres },
+        $match: { genres: req.query.genres   },
       });
     }
 
@@ -164,12 +152,9 @@ const sum = async (req, res) => {
 
 const descending = async (req, res) => {
   try {
-    const page = parseInt(req.query.page || 1);
-    const limit = parseInt(req.query.limit || 10);
-
+    const { page, limit } = req.pagination;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-
     const result = {};
 
 
@@ -214,50 +199,9 @@ const descending = async (req, res) => {
 }
 
 
-const protected = async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      const token = req.cookies.jwt;
-      console.log(token)
-      res.json({ authenticated: true, token });
-    } else {
-      res.json({ authenticated: false });
-    }
-  } catch (error) {
-    console.error("An error occurred:", error);
-    res.status(500).send("Internal Server Error");
-  }
-  ;
-}
-
-const failure = async (req, res) => {
-  res.send("login failed")
-}
 
 
-const profile = async(req,res) => { 
-  try {
-    if (req.isAuthenticated()) {
-        const token = req.cookies.jwt;
-        res.json({ authenticated: true });
-      } else {
-        res.json({ authenticated: false });
-      }
-  } catch (error) {
-  console.error("An error occurred:", error);
-  res.status(500).send("Internal Server Error");
-  }
-  ;
-}
-
-const logout = async(req,res) => { 
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
-  });
-}
-
-module.exports = { movie, sum, descending, groupyear, logout, profile,failure, protected }
+module.exports = { movie, sum, descending, groupyear }
 
 
 

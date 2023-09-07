@@ -1,15 +1,16 @@
 const express = require("express") ; 
 const mongoose = require("mongoose");
 const app = express() ;
-const db = require("./db/db")
-const movies= require("./db/schema")
+const db = require("./model/db")
+const movies= require("./model/schema")
 const route = require("./routes/route") 
+const router = require("./routes/authroute") ; 
 const session = require("express-session")
 const passport = require("passport")
 const cookieparser = require("cookie-parser")
-const movie = require("./db/schema")
+const movie = require("./model/schema")
 require("./passport")
-const User = require("./db/schemaauth")
+const User = require("./model/schemaauth")
 
 
 
@@ -35,6 +36,7 @@ app.use(passport.session())
 app.use(express.json({limit : '5mb'}));
 app.use(express.urlencoded({extended : true}));
 app.use('/',route )
+app.use("/",router)
 
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile'] }));
