@@ -1,6 +1,7 @@
 const express = require("express") ; 
 const mongoose = require("mongoose");
 const app = express() ;
+const routersub = require("./routes/routesub")
 const db = require("./model/db")
 const movies= require("./model/schema")
 const route = require("./routes/route") 
@@ -9,6 +10,8 @@ const session = require("express-session")
 const passport = require("passport")
 const cookieparser = require("cookie-parser")
 const movie = require("./model/schema")
+const axios = require("axios") ;
+const bodyParser = require('body-parser');
 require("./passport")
 const User = require("./model/schemaauth")
 
@@ -32,6 +35,7 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.use(bodyParser.json());
 
 app.use(express.json({limit : '5mb'}));
 app.use(express.urlencoded({extended : true}));
@@ -190,6 +194,91 @@ movies.insertMany([
   res.send('Mongodb aggregation')
 })
 
+
+
+
+
+
+
+
+
+
+
+
+// const clientId = '1000.S8VH7L4SYAW97M08MPDJ3NKASK74LH';
+// const clientSecret = '2fe70fd1aa78b419dde31803feab2d8643073834b7';
+// const redirectUri = 'https://sgwebpartners.com/';
+// const refreshToken = '1000.6b52c89fd810f2161e3d9131098108d9.f9828bed827358d8f2b166d6e6512915';
+
+
+// const apiUrl = 'https://campaigns.zoho.com/api/v1/';
+
+
+// const axiosInstance = axios.create({
+//   baseURL: apiUrl,
+//   headers: {
+//     Authorization: `Bearer ${refreshToken}`,
+//   },
+// });
+
+
+// app.post('/create-campaign', async (req, res) => {
+//   try {
+   
+//     const { name, subject, from_name, from_email, list_ids, content } = req.body;
+
+   
+//     const response = await axiosInstance.post('campaigns', {
+//       name,
+//       subject,
+//       from_name,
+//       from_email,
+//       list_ids,
+//       content,
+//     });
+
+//     res.status(201).json(response.data);
+//   } catch (error) {
+//     console.error('Error creating campaign:', error);
+//     res.status(500).json({ error: 'Failed to create campaign' });
+//   }
+// });
+
+
+
+
+
+
+app.post('/addemail', async (req, res) => {
+    try {
+      const apiKey = 'fee5adc560b27214bdca3e234894b420'; 
+      const listKey = '3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd';
+      const { firstName , lastName, email } = req.body; 
+  
+    const apiUrl = `https://campaigns.zoho.com/api/v1.1/json/listsubscribe?resfmt=JSON&listkey=${listKey}&contactinfo=%7B%22First+Name%22%3A%22${firstName}%22%2C%22Last+Name%22%3A%22${lastName}%22%2C%22Contact+Email%22%3A%22${email}%22%7D`;
+
+
+      
+    const accessToken = '1000.5fe804f5fb2cd1c22df51cba4752de52.f32766b3366693b8891a6144dae7f67f'; 
+    const headers = {
+      Authorization: `Zoho-oauthtoken ${accessToken}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+  
+      const response = await axios.post(apiUrl, {}, { headers });
+  
+      if (response.data && response.data.code === 'success') {
+        console.log('Contact updated successfully:', response.data);
+        res.status(200).json({ message: 'Contact updated successfully' });
+      } else {
+        console.error('Error updating contact:', response.data);
+        res.status(500).json({ error: 'Error updating contact' });
+      }
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 app.listen(3000,() => { 
     console.log("app is working") ;

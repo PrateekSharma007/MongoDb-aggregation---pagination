@@ -6,8 +6,9 @@ const db = require("../model/db");
 const { aggregate } = require("mongoose")
 const User = require("../model/schemaauth")
 const paginateMiddleware = require("../utils/pagination");
-
-
+const { Readable } = require('stream');
+const { stringify } = require("querystring");
+const fs = require('fs');
 
 const movie = async (req, res) => {
   try {
@@ -198,10 +199,28 @@ const descending = async (req, res) => {
 
 }
 
+const jsonData = {
+  name: 'Virat Kohli',
+  age: 34,
+  city: 'Delhi',
+};
+
+const data = (req, res) => {
+  const jsonStream = new Readable({
+    read() {
+      this.push(JSON.stringify(jsonData));
+      this.push(null);
+    },
+  });
+
+  res.setHeader('Content-Type', 'application/json');
+  jsonStream.pipe(res);
+};
 
 
 
-module.exports = { movie, sum, descending, groupyear }
+
+module.exports = { movie, sum, descending, groupyear, data }
 
 
 
