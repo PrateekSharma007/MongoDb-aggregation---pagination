@@ -2,7 +2,7 @@ const express = require("express") ;
 const app = express() ; 
 const router = express.Router() ; 
 const {logout, protected, failure, profile} = require("../controller/controlauth") ;
-const {addEmail} = require("../controller/subscription")
+// const {addEmail} = require("../controller/subscription")
 
 
 router.get("/protected" ,protected) ; 

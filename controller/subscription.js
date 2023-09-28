@@ -1,115 +1,79 @@
+const express = require("express") ; 
+const app = express(); 
 const axios = require("axios") 
 
 
 
-
-
-
-// const contactData = [
-//     {
-//       Email: 'sharma.prateek0000@gmail.com',
-//       'First Name': 'PRATEEK',
-//       'Last Name': 'SHARMA',
-//     },
-//   ];
-
-
-
-
-  const addEmail = async (req,res) => {
-    try {
-      const apiKey = 'fee5adc560b27214bdca3e234894b420';
-      const email = 'sharma.prateek00000@gmail.com';
-      const listId = '3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd'; 
-  
-      const apiUrl = `https://campaigns.zoho.com/api/v1/contact/add?apikey=${apiKey}&listkey=${listId}`;
-  
-      
-      const response = await axios.post(apiUrl, {
-        data: [
-          {
-            email,
-          },
-        ],
-      });
-  
-      // Check if the API response indicates success (you may need to adjust this based on the API's response format)
-      if (response.status === 200 && response.data && response.data.code === 'success') {
-        console.log('Email ID added successfully:', response.data);
-        res.status(200).json({ message: 'Email ID added successfully' });
-      } else {
-        console.error('Error adding email ID:', response.data);
-        res.status(500).json({ error: 'Error adding email ID' });
-      }
-    } catch (error) {
-      console.error('Error adding email ID:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  };
-
-
-  
-  
-
-
-
-
-
-
-
-const subscribeContacts = async () => {
-  const apiUrl = `https://campaigns.zoho.com/api/v1.1/json/listsubscribe?resfmt=JSON&listkey=${"3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd"}`;
-  const headers = {
-    Authorization: `Bearer ${accessToken}`,
-  };
-
+const subscribe = async (req, res) => {
   try {
-    const response = await axios.post(apiUrl, { data: contactData }, { headers });
+    const apiKey = 'fee5adc560b27214bdca3e234894b420'; 
+    const listKey = '3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd';
+    const { firstname , lastname, email } = req.body; 
 
-    if (response.status === 200) {
-      console.log('Subscription successful!');
+  const apiUrl = `https://campaigns.zoho.com/api/v1.1/json/listsubscribe?resfmt=JSON&listkey=3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd&contactinfo=%7B%22First+Name%22%3A%22${firstname}%22%2C%22Last+Name%22%3A%22${lastname}%22%2C%22Contact+Email%22%3A%22${email}%22%7D`;
+
+
+    
+  const accessToken = '1000.03e1023e8f40cd61a603eeb88b8c1f00.6df45e93f0f7c1b8eac1fb01d84f7353'; 
+  const headers = {
+    Authorization: `Zoho-oauthtoken ${accessToken}`,
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+
+    const response = await axios.post(apiUrl, {}, { headers });
+
+    if (response) {
+      res.status(200).json({ message: 'Please verify yourself , check your mail' });
     } else {
-      console.error(`Error: ${response.status}, ${response.data.message}`);
+      res.status(500).json({ error: 'Error updating contact' });
     }
   } catch (error) {
-    console.error('An error occurred:', error.message);
+    console.error('Error updating contact:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 
+const unsubscribe = async (req,res) => { 
+  try {
+    const apiKey = 'fee5adc560b27214bdca3e234894b420'; 
+    const listKey = '3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd';
+    const { firstName , lastName, email } = req.body; 
 
-const unsubscribeContacts = async () => {
-    const apiUrl = `https://campaigns.zoho.com/api/v1.1/json/listunsubscribe?resfmt=JSON&listkey=${listKey}`;
+    const apiurl =` https://campaigns.zoho.com/api/v1.1/json/listsubscribe?resfmt=JSON&listkey=${listKey}&contactinfo=%7B%22First+Name%22%3A%22${firstName}%22%2C%22Last+Name%22%3A%22${lastName}%22%2C%22Contact+Email%22%3A%22${email}%22%7D`
+  
+
+
+    const accessToken = '1000.4bd72025fca58c2fc41e81655ac97811.e0290faca451efe5200d64c18fdf1d4a'; 
     const headers = {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Zoho-oauthtoken ${accessToken}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
     };
-  
-    try {
-      const response = await axios.post(apiUrl, { Email: unsubscribeEmail }, { headers });
-  
-      if (response.status === 200) {
-        console.log('Unsubscription successful!');
-      } else {
-        console.error(`Error: ${response.status}, ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error('An error occurred:', error.message);
+
+    const response = await axios.post(apiurl, {}, { headers });
+
+    if(response){
+      res.send("Successfully unsubsctibed") ;
+    }else{
+      res.status(500).json({ error: 'Error updating contact' });
     }
-  };
+  }catch(error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  } 
 
-
-
-module.exports = {subscribeContacts,addEmail}
-
-
-
-
+}
 
 
 
 
+module.exports = {subscribe,unsubscribe}
 
 
 
 
-// https://campaigns.zoho.com/api/v1.1/json/listsubscribe?resfmt=JSON&listkey=3za066450fed17e3db132e443165c35ff43b1b2b2a44c6b67f8caf6d9f8d378ddd&contactinfo={First+Name:prateek,Last+Name:prateek,Contact+Email:sharma.prateek00000@gmail.com
+
+
+
+
+
+

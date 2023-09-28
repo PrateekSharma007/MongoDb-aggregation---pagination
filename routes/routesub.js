@@ -1,12 +1,13 @@
-const express = require("express") 
+const express = require("express") ; 
 const app = express() ; 
-const router = express.Router() ;
-const {addEmail} = require("../controller/subscription") 
+const router = express.Router() ; 
+const {subscribe, unsubscribe} = require("../controller/subscription")
 
 
 
+router.post("/subscribe" , subscribe) ; 
 
-router.post("/addemail" , addEmail) ;
+router.post("/unsubscribe", unsubscribe) ;
 
 
-module.exports = router ;
+module.export = router ;
